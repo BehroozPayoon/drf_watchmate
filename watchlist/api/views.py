@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import NotFound
 
 from watchlist.models import WatchList, StreamPlatform
 from .serializers import WatchListSerializer, StreamPlatformSerializer
@@ -13,7 +14,7 @@ class StreamPlatformApiView(APIView):
         serializer = StreamPlatformSerializer(platforms, many=True)
         return Response(serializer.data)
 
-    def create(self, request):
+    def post(self, request):
         serializer = StreamPlatformSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -27,14 +28,15 @@ class StreamPlatformDetailApiView(APIView):
             stream_platform = StreamPlatform.objects.get(pk=pk)
             return stream_platform
         except StreamPlatform.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            raise NotFound()
 
     def get(self, request, pk):
         stream_platform = self._find_by_pk(pk=pk)
+        print(stream_platform)
         serializer = StreamPlatformSerializer(stream_platform)
         return Response(serializer.data)
 
-    def update(self, request, pk):
+    def put(self, request, pk):
         stream_platform = self._find_by_pk(pk=pk)
         serializer = StreamPlatformSerializer(
             stream_platform, data=request.data)
@@ -73,14 +75,14 @@ class WatchListDetailApiView(APIView):
             item = WatchList.objects.get(pk=pk)
             return item
         except WatchList.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            raise NotFound()
 
     def get(self, request, pk):
         item = self._find_by_pk(pk=pk)
         serializer = WatchListSerializer(item)
         return Response(serializer.data)
 
-    def update(self, request, pk):
+    def put(self, request, pk):
         item = self._find_by_pk(pk=pk)
         serializer = WatchListSerializer(item, data=request.data)
         if serializer.is_valid():
